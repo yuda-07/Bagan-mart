@@ -99,4 +99,25 @@ router.get('/me', authenticate, async (req: Request, res: Response): Promise<voi
   }
 });
 
+// ===== SETUP ADMIN (TEMPORARY - ONE TIME USE) =====
+// GET /api/auth/setup-admin → Buat admin jika belum ada
+router.get('/setup-admin', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const existing = await prisma.user.findUnique({ where: { email: 'admin@phlox.com' } });
+    if (existing) {
+      res.json({ message: 'Admin sudah ada!', email: 'admin@phlox.com' });
+      return;
+    }
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const admin = await prisma.user.create({
+      data: { name: 'Admin PHLOX', email: 'admin@phlox.com', password: hashedPassword, role: 'admin' },
+    });
+    res.json({ message: '✅ Admin berhasil dibuat!', email: admin.email, password: 'admin123' });
+  } catch (error) {
+    console.error('Setup admin error:', error);
+    res.status(500).json({ error: 'Gagal membuat admin.', detail: String(error) });
+  }
+});
+
 export default router;
+
