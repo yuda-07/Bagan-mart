@@ -24,9 +24,9 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ===== MIDDLEWARE =====
-// CORS: mengizinkan frontend (port 3000 & 5174) mengakses API
+// CORS: allow localhost in dev, all origins in production
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: process.env.NODE_ENV === 'production' ? '*' : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
 }));
 
@@ -42,7 +42,12 @@ app.use('/api/shipping', shippingRoutes); // Kalkulator Ongkir
 app.use('/api/promos', promoRoutes);      // Coupon & Flash Sale
 
 // ===== HEALTH CHECK =====
-// Endpoint sederhana untuk cek apakah server berjalan
+// Root path for Back4App / container health checks
+app.get('/', (_req, res) => {
+  res.json({ status: 'OK', message: '🚀 E-Commerce API is running!' });
+});
+
+// Detailed health check
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'OK',
