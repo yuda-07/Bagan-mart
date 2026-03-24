@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ClipboardList, BarChart2,
   Truck, Tag, LogOut, Bell, Settings
@@ -14,7 +14,6 @@ const navItems = [
 ];
 
 const AdminLayout = () => {
-  const navigate = useNavigate();
   return (
     <div className="flex h-screen bg-background overflow-hidden text-sm">
       {/* Sidebar */}
