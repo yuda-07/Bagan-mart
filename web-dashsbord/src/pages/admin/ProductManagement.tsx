@@ -67,6 +67,21 @@ const ProductManagement = () => {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // ===== SIMPAN PRODUK (TAMBAH / EDIT) VIA API =====
   const save = async () => {
     try {
@@ -207,8 +222,24 @@ const ProductManagement = () => {
                     <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-primary" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Image URL</label>
-                    <input type="text" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-primary" />
+                    <label className="text-xs text-muted-foreground mb-1 block">Product Image</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageUpload} 
+                      className="w-full bg-background border border-border rounded-xl px-4 py-2 text-white text-sm outline-none 
+                        file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 
+                        file:text-sm file:font-semibold file:bg-primary file:text-black 
+                        hover:file:bg-primary-hover file:cursor-pointer cursor-pointer" 
+                    />
+                    {form.imageUrl && (
+                      <div className="mt-3 relative inline-flex">
+                        <img src={form.imageUrl} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-border" />
+                        <button type="button" onClick={() => setForm({...form, imageUrl: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-colors">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
