@@ -23,6 +23,7 @@ const ProductManagement = () => {
   
   const initialForm = { name: '', description: '', specs: '', reviews: '', category: '', price: '', stock: '', imageUrl: '' };
   const [form, setForm] = useState(initialForm);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // ===== AMBIL DATA PRODUK DARI API =====
   const fetchProducts = async () => {
@@ -67,18 +68,35 @@ const ProductManagement = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         alert('File size exceeds 5MB');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm(prev => ({ ...prev, imageUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/products/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to upload image');
+        
+        setForm(prev => ({ ...prev, imageUrl: data.imageUrl }));
+      } catch (err: any) {
+        alert('Upload Error: ' + err.message);
+      } finally {
+        setUploadingImage(false);
+      }
     }
   };
 
@@ -227,12 +245,19 @@ const ProductManagement = () => {
                       type="file" 
                       accept="image/*"
                       onChange={handleImageUpload} 
+                      disabled={uploadingImage}
                       className="w-full bg-background border border-border rounded-xl px-4 py-2 text-white text-sm outline-none 
                         file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 
                         file:text-sm file:font-semibold file:bg-primary file:text-black 
-                        hover:file:bg-primary-hover file:cursor-pointer cursor-pointer" 
+                        hover:file:bg-primary-hover file:cursor-pointer cursor-pointer disabled:opacity-50" 
                     />
-                    {form.imageUrl && (
+                    {uploadingImage && (
+                      <p className="text-xs text-primary mt-2 flex items-center gap-2">
+                        <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" /> 
+                        Uploading to Cloudinary...
+                      </p>
+                    )}
+                    {form.imageUrl && !uploadingImage && (
                       <div className="mt-3 relative inline-flex">
                         <img src={form.imageUrl} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-border" />
                         <button type="button" onClick={() => setForm({...form, imageUrl: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-colors">
