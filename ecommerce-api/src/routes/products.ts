@@ -11,8 +11,24 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import { authenticate, adminOnly } from '../middleware/auth.js';
+import { upload } from '../config/cloudinary.js';
 
 const router = Router();
+
+// ===== UPLOAD GAMBAR BARU (Admin Only) =====
+router.post('/upload', authenticate, adminOnly, upload.single('image'), (req: Request, res: Response): void => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'Tidak ada gambar yang diunggah.' });
+      return;
+    }
+    // multer-storage-cloudinary gives us the 'path' property which holds the Cloudinary URL
+    res.json({ imageUrl: req.file.path });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Gagal mengunggah gambar.' });
+  }
+});
 
 // ===== GET SEMUA PRODUK (Publik) =====
 // Query: ?category=Headphones&search=beats
