@@ -116,14 +116,23 @@ router.put('/:id', authenticate, adminOnly, async (req: Request, res: Response):
 // ===== HAPUS PRODUK (Admin Only) =====
 router.delete('/:id', authenticate, adminOnly, async (req: Request, res: Response): Promise<void> => {
   try {
+    const productId = Number(req.params.id);
+
+    // Hapus terlebih dahulu semua OrderItem yang terkait dengan produk ini
+    // Ini mencegah error "Foreign Key Constraint" jika produk ini pernah dibeli
+    await prisma.orderItem.deleteMany({
+      where: { productId }
+    });
+
+    // Setelah bebas dari pesanan, hapus produk utama
     await prisma.product.delete({
-      where: { id: Number(req.params.id) },
+      where: { id: productId },
     });
 
     res.json({ message: 'Produk berhasil dihapus!' });
   } catch (error) {
     console.error('Delete product error:', error);
-    res.status(500).json({ error: 'Gagal menghapus produk.' });
+    res.status(500).json({ error: 'Gagal menghapus produk. Jika produk ini memiliki riwayat pesanan yang kompleks, Anda mungkin tidak bisa menghapusnya.' });
   }
 });
 
