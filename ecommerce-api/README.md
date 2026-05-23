@@ -30,8 +30,8 @@ Ini akan membuat semua tabel di database `ecommerce_db`
 npm run db:seed
 ```
 Ini akan menambahkan:
-- 1 user admin (admin@phlox.com / admin123)
-- 1 user customer (danny@gmail.com / customer123)
+- 1 user admin (admin@gmsil.com / admin123)
+- 1 user customer (admin@gmail.com / customer123)
 - 6 produk contoh
 - 2 coupon (SAVE20, SUMMER10)
 
